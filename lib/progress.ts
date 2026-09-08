@@ -1,3 +1,4 @@
+import { addYears, format, isAfter } from "date-fns";
 import type { TestOutcome } from "@/lib/challenges";
 
 export type ChallengeStatus = "ready" | "running" | "passed" | "failed";
@@ -8,18 +9,25 @@ export type ChallengeResult = {
   runtimeError: string | null;
 };
 
+export const CERTIFICATE_VALIDITY_YEARS = 4;
+
 export type ProgressState = {
   code: Record<number, string>;
   results: Record<number, ChallengeResult>;
   completed: Record<number, boolean>;
+  assessmentStarted: boolean;
+  assessmentStartedAt: string | null;
   learnerName: string;
+  nameConfirmed: boolean;
+  nameConfirmedAt: string | null;
   courseCompleted: boolean;
   completionDate: string | null;
   certificateId: string | null;
   certificateUrl: string | null;
+  issueDate: string | null;
+  expiryDate: string | null;
 };
 
-const STORAGE_KEY = "sep-assessment-progress-v1";
 const COURSE_NAME = "Software Engineer Programme";
 
 export function createDefaultProgress(
@@ -29,33 +37,18 @@ export function createDefaultProgress(
     code: { ...starterCodeById },
     results: {},
     completed: {},
+    assessmentStarted: false,
+    assessmentStartedAt: null,
     learnerName: "",
+    nameConfirmed: false,
+    nameConfirmedAt: null,
     courseCompleted: false,
     completionDate: null,
     certificateId: null,
     certificateUrl: null,
+    issueDate: null,
+    expiryDate: null,
   };
-}
-
-export function loadProgress(): ProgressState | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as ProgressState;
-  } catch {
-    return null;
-  }
-}
-
-export function saveProgress(state: ProgressState) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // Storage unavailable (private browsing, quota, etc.) — progress simply
-    // won't persist across reloads; nothing else to do about it here.
-  }
 }
 
 export function generateCertificateId(): string {
@@ -85,6 +78,20 @@ export function formatCompletionDate(iso: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+/** Certificates show DD/MM/YYYY per the issue/expiry date spec. */
+export function formatCertificateDate(iso: string): string {
+  return format(new Date(iso), "dd/MM/yyyy");
+}
+
+export function computeExpiryDate(issueDateIso: string): string {
+  return addYears(new Date(issueDateIso), CERTIFICATE_VALIDITY_YEARS).toISOString();
+}
+
+export function isCertificateExpired(expiryDateIso: string | null): boolean {
+  if (!expiryDateIso) return false;
+  return isAfter(new Date(), new Date(expiryDateIso));
 }
 
 export { COURSE_NAME };

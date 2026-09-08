@@ -16,6 +16,7 @@ type TestCase = {
 
 export type Challenge = {
   id: number;
+  slug: string;
   category: string;
   title: string;
   description: string;
@@ -108,6 +109,7 @@ export function runChallengeTests(
 export const challenges: Challenge[] = [
   {
     id: 1,
+    slug: "arrays",
     category: "Arrays",
     title: "Sum Numbers",
     description:
@@ -135,6 +137,7 @@ console.log(sumNumbers([1, 2, 3, 4, 5]));
   },
   {
     id: 2,
+    slug: "functions",
     category: "Functions",
     title: "Function Return Type",
     description:
@@ -166,6 +169,7 @@ console.log(getValueType("Hello"));
   },
   {
     id: 3,
+    slug: "objects",
     category: "Objects",
     title: "Todo Task",
     description: "Create a JavaScript object representing a todo task.",
@@ -219,3 +223,21 @@ console.log(createTodo("Learn JavaScript"));
     ],
   },
 ];
+
+export const challengeSlugs = challenges.map((c) => c.slug);
+
+export function getChallengeBySlug(slug: string): Challenge | undefined {
+  return challenges.find((c) => c.slug === slug);
+}
+
+export function getChallengeIndexBySlug(slug: string): number {
+  return challenges.findIndex((c) => c.slug === slug);
+}
+
+/** First challenge slug that isn't marked complete, or the last slug if all are done. */
+export function getNextIncompleteSlug(
+  completed: Record<number, boolean>
+): string {
+  const next = challenges.find((c) => !completed[c.id]);
+  return next ? next.slug : challenges[challenges.length - 1].slug;
+}

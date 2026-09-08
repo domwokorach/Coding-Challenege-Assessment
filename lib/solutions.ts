@@ -1,6 +1,6 @@
-import * as arrays from "@/src/challenges/arrays/solution.js";
-import * as functions from "@/src/challenges/functions/solution.js";
-import * as objects from "@/src/challenges/objects/solution.js";
+import * as arrays from "@/lib/challenges/arrays/solution.js";
+import * as functions from "@/lib/challenges/functions/solution.js";
+import * as objects from "@/lib/challenges/objects/solution.js";
 
 export type Solution = {
   code: string;
