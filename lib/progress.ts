@@ -11,10 +11,21 @@ export type ChallengeResult = {
 
 export const CERTIFICATE_VALIDITY_YEARS = 4;
 
+/** Minutes a learner must spend on a challenge before its solution unlocks. */
+export const SOLUTION_UNLOCK_MINUTES = 5;
+export const SOLUTION_UNLOCK_MS = SOLUTION_UNLOCK_MINUTES * 60 * 1000;
+export const SOLUTION_UNLOCK_SECONDS = SOLUTION_UNLOCK_MINUTES * 60;
+
+export type SolutionTimer = {
+  startedAt: string;
+  unlockAt: string;
+};
+
 export type ProgressState = {
   code: Record<number, string>;
   results: Record<number, ChallengeResult>;
   completed: Record<number, boolean>;
+  solutionTimers: Record<number, SolutionTimer>;
   assessmentStarted: boolean;
   assessmentStartedAt: string | null;
   learnerName: string;
@@ -37,6 +48,7 @@ export function createDefaultProgress(
     code: { ...starterCodeById },
     results: {},
     completed: {},
+    solutionTimers: {},
     assessmentStarted: false,
     assessmentStartedAt: null,
     learnerName: "",
@@ -48,6 +60,26 @@ export function createDefaultProgress(
     certificateUrl: null,
     issueDate: null,
     expiryDate: null,
+  };
+}
+
+/**
+ * Backfills any fields missing from stored progress (rows saved before a
+ * field like `solutionTimers` existed) so reads never hit `undefined`
+ * mid-object — the shape has grown several times across this app's life.
+ */
+export function normalizeProgress(
+  data: Partial<ProgressState> | null | undefined,
+  defaults: ProgressState
+): ProgressState {
+  if (!data) return defaults;
+  return {
+    ...defaults,
+    ...data,
+    code: { ...defaults.code, ...data.code },
+    results: { ...defaults.results, ...data.results },
+    completed: { ...defaults.completed, ...data.completed },
+    solutionTimers: { ...defaults.solutionTimers, ...data.solutionTimers },
   };
 }
 
@@ -92,6 +124,40 @@ export function computeExpiryDate(issueDateIso: string): string {
 export function isCertificateExpired(expiryDateIso: string | null): boolean {
   if (!expiryDateIso) return false;
   return isAfter(new Date(), new Date(expiryDateIso));
+}
+
+export function createSolutionTimer(now: number = Date.now()): SolutionTimer {
+  return {
+    startedAt: new Date(now).toISOString(),
+    unlockAt: new Date(now + SOLUTION_UNLOCK_MS).toISOString(),
+  };
+}
+
+/** Seconds remaining until `timer` unlocks, clamped to 0. */
+export function solutionSecondsRemaining(
+  timer: SolutionTimer | undefined,
+  now: number = Date.now()
+): number {
+  if (!timer) return SOLUTION_UNLOCK_SECONDS;
+  const remainingMs = new Date(timer.unlockAt).getTime() - now;
+  return Math.max(0, Math.ceil(remainingMs / 1000));
+}
+
+/** "MM:SS" for the button label, e.g. "04:59". */
+export function formatCountdown(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+/** "3 minutes 24 seconds" for the locked toast description. */
+export function formatDurationWords(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  const parts: string[] = [];
+  if (m > 0) parts.push(`${m} minute${m === 1 ? "" : "s"}`);
+  if (s > 0 || m === 0) parts.push(`${s} second${s === 1 ? "" : "s"}`);
+  return parts.join(" ");
 }
 
 export { COURSE_NAME };

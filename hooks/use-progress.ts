@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ProgressState } from "@/lib/progress";
+import { normalizeProgress, type ProgressState } from "@/lib/progress";
 
 const SAVE_DEBOUNCE_MS = 600;
 
@@ -19,9 +19,9 @@ export function useProgress(createDefault: () => ProgressState) {
     let cancelled = false;
     fetch("/api/progress")
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: ProgressState | null) => {
+      .then((data: Partial<ProgressState> | null) => {
         if (cancelled) return;
-        setProgress(data ?? createDefault());
+        setProgress(normalizeProgress(data, createDefault()));
         setLoaded(true);
       })
       .catch(() => {

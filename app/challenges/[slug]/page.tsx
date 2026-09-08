@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Moon, Sun } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/toast";
 import {
   Tabs,
   TabsContent,
@@ -32,6 +33,10 @@ import {
 import { solutionsById } from "@/lib/solutions";
 import {
   createDefaultProgress,
+  createSolutionTimer,
+  formatCountdown,
+  formatDurationWords,
+  solutionSecondsRemaining,
   type ChallengeStatus as Status,
   type ChallengeResult,
 } from "@/lib/progress";
@@ -109,6 +114,28 @@ export default function ChallengePage(
     );
   }, [loaded, progress, setProgress]);
 
+  // Solution unlock countdown — starts the moment a challenge is first
+  // opened and is stored server-side so a refresh can't reset it.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded || !challenge) return;
+    setProgress((prev) => {
+      if (!prev || prev.solutionTimers[challenge.id]) return prev;
+      return {
+        ...prev,
+        solutionTimers: {
+          ...prev.solutionTimers,
+          [challenge.id]: createSolutionTimer(),
+        },
+      };
+    });
+  }, [loaded, challenge, setProgress]);
+
   const index = challenge ? challenges.indexOf(challenge) : 0;
   const solution = challenge ? solutionsById[challenge.id] : undefined;
 
@@ -131,6 +158,42 @@ export default function ChallengePage(
 
   const allCompleted = challenges.every((c) => progress?.completed[c.id]);
   const isLastChallenge = index === challenges.length - 1;
+
+  // Review mode is an interviewer/admin override that bypasses the
+  // countdown entirely; candidates always go through the timed unlock.
+  const solutionBypassed = mode === "review";
+  const solutionTimer = challenge ? progress?.solutionTimers[challenge.id] : undefined;
+  const solutionSecondsLeft = solutionSecondsRemaining(solutionTimer, now);
+  const solutionLocked = !solutionBypassed && solutionSecondsLeft > 0;
+
+  const sawLockedRef = useRef<Record<number, boolean>>({});
+  useEffect(() => {
+    if (!challenge || solutionBypassed) return;
+    if (solutionLocked) {
+      sawLockedRef.current[challenge.id] = true;
+      return;
+    }
+    if (sawLockedRef.current[challenge.id]) {
+      sawLockedRef.current[challenge.id] = false;
+      toast.add({
+        title: "Solution available",
+        description: "You can now view the reference solution.",
+        type: "success",
+      });
+    }
+  }, [challenge, solutionBypassed, solutionLocked]);
+
+  function handleSolutionClick() {
+    if (solutionLocked) {
+      toast.add({
+        title: "Solution locked",
+        description: `The reference solution will be available in ${formatDurationWords(solutionSecondsLeft)}.`,
+        type: "warning",
+      });
+      return;
+    }
+    setSolutionOpen(true);
+  }
 
   function setCode(value: string) {
     if (!challenge) return;
@@ -341,15 +404,24 @@ export default function ChallengePage(
               Reset Code
             </Button>
             <div className="flex items-center gap-2">
-              {mode === "review" && (
-                <Button
-                  size="sm"
-                  onClick={() => setSolutionOpen(true)}
-                  className="border border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                >
-                  Solution
-                </Button>
-              )}
+              <Button
+                size="sm"
+                onClick={handleSolutionClick}
+                disabled={solutionLocked}
+                className={
+                  solutionLocked
+                    ? "border border-zinc-300 bg-zinc-200 text-zinc-400 cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500"
+                    : solutionOpen
+                      ? "bg-zinc-300 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100"
+                      : "border border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                }
+              >
+                {solutionLocked
+                  ? `Solution — ${formatCountdown(solutionSecondsLeft)}`
+                  : solutionOpen
+                    ? "Solution Open"
+                    : "Solution"}
+              </Button>
               <Button
                 size="sm"
                 onClick={() => void handleRunTest()}
@@ -464,7 +536,7 @@ export default function ChallengePage(
         )}
       </footer>
 
-      {mode === "review" && solution && (
+      {solution && (
         <SolutionDialog
           open={solutionOpen}
           onOpenChange={setSolutionOpen}

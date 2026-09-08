@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { progress as progressTable } from "@/lib/schema";
 import { challenges } from "@/lib/challenges";
-import type { ProgressState } from "@/lib/progress";
+import { createDefaultProgress, normalizeProgress, type ProgressState } from "@/lib/progress";
 
 export default async function ProgrammePage() {
   const { userId } = await auth();
@@ -18,12 +18,16 @@ export default async function ProgrammePage() {
     .where(eq(progressTable.userId, userId))
     .limit(1);
 
-  const data = row?.data as ProgressState | undefined;
-  const completedCount = data
-    ? challenges.filter((c) => data.completed[c.id]).length
-    : 0;
-  const courseCompleted = data?.courseCompleted ?? false;
-  const assessmentStarted = data?.assessmentStarted ?? false;
+  const starterCodeById = Object.fromEntries(
+    challenges.map((c) => [c.id, c.starterCode])
+  );
+  const data = normalizeProgress(
+    row?.data as Partial<ProgressState> | undefined,
+    createDefaultProgress(starterCodeById)
+  );
+  const completedCount = challenges.filter((c) => data.completed[c.id]).length;
+  const courseCompleted = data.courseCompleted;
+  const assessmentStarted = data.assessmentStarted;
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">

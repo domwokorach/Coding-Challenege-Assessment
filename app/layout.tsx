@@ -6,6 +6,7 @@ import "./globals.css";
 import "@clerk/ui/themes/shadcn.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toast";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -45,7 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ClerkProvider appearance={{ theme: shadcn }}>
           <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
-          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster>
+            <TooltipProvider>{children}</TooltipProvider>
+          </Toaster>
         </ClerkProvider>
       </body>
     </html>
