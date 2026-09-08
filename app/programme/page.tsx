@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import { progress as progressTable } from "@/lib/schema";
 import { challenges } from "@/lib/challenges";
 import { createDefaultProgress, normalizeProgress, type ProgressState } from "@/lib/progress";
+import { Logo } from "@/components/logo";
 
 export default async function ProgrammePage() {
   const { userId } = await auth();
@@ -32,9 +33,16 @@ export default async function ProgrammePage() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          Software Engineer Programme
-        </p>
+        <Link
+          href="/programme"
+          aria-label="Software Engineer Programme home"
+          className="flex items-center gap-3"
+        >
+          <Logo size={36} />
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Software Engineer Programme
+          </p>
+        </Link>
         <UserButton />
       </header>
 

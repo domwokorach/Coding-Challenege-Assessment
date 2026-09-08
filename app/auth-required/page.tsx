@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 
 export default async function AuthRequiredPage(
   props: PageProps<"/auth-required">
@@ -11,6 +12,7 @@ export default async function AuthRequiredPage(
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 px-6 text-center dark:bg-zinc-950">
       <div>
+        <Logo size={72} className="mx-auto mb-5" />
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
           Sign in to start your coding assessment
         </h1>

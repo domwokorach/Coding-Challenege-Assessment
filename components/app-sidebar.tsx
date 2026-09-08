@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { Braces, Brackets, CheckCircle2, SquareFunction, Trophy } from "lucide-react";
+import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -40,10 +42,12 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-3">
-        <div className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-zinc-900 text-xs font-bold text-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
-            SE
-          </div>
+        <Link
+          href="/programme"
+          aria-label="Software Engineer Programme home"
+          className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center"
+        >
+          <Logo size={28} />
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-semibold leading-tight">
               Software Engineer
@@ -52,7 +56,7 @@ export function AppSidebar({
               Coding Assessment
             </p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent>

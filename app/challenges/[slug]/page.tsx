@@ -407,7 +407,7 @@ export default function ChallengePage(
               <Button
                 size="sm"
                 onClick={handleSolutionClick}
-                disabled={solutionLocked}
+                aria-disabled={solutionLocked}
                 className={
                   solutionLocked
                     ? "border border-zinc-300 bg-zinc-200 text-zinc-400 cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500"

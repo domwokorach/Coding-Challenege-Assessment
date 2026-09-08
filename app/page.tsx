@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { Logo } from "@/components/logo";
 
 export default async function WelcomePage() {
   const { userId } = await auth();
@@ -10,6 +11,7 @@ export default async function WelcomePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-zinc-50 px-6 text-center dark:bg-zinc-950">
       <div>
+        <Logo size={88} className="mx-auto mb-5" />
         <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Welcome{" "}
           <span className="font-mono text-zinc-500 dark:text-zinc-500">
