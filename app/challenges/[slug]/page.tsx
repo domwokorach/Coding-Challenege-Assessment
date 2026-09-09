@@ -3,7 +3,6 @@
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Moon, Sun } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast";
@@ -336,7 +335,6 @@ export default function ChallengePage(
               <Sun className="size-4" />
             )}
           </button>
-          <UserButton />
         </div>
       </header>
 

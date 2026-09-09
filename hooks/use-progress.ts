@@ -6,9 +6,9 @@ import { normalizeProgress, type ProgressState } from "@/lib/progress";
 const SAVE_DEBOUNCE_MS = 600;
 
 /**
- * Progress lives server-side (keyed by the authenticated Clerk user), not
- * in localStorage — it must survive logout/login and follow the learner's
- * account, not the device.
+ * Progress lives server-side (keyed by the single implicit guest identity),
+ * not in localStorage — this app has no authentication, so all visitors
+ * share the same progress record.
  */
 export function useProgress(createDefault: () => ProgressState) {
   const [progress, setProgress] = useState<ProgressState | null>(null);

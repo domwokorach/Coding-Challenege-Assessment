@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { CompletionScreen } from "@/components/completion-screen";
 import { useProgress } from "@/hooks/use-progress";
@@ -130,7 +129,6 @@ export default function CodingAssessmentPage() {
         <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           Software Engineer Programme
         </p>
-        <UserButton />
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">

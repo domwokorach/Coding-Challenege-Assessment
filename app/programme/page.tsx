@@ -1,31 +1,13 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
-import { UserButton } from "@clerk/nextjs";
-import { eq } from "drizzle-orm";
-import { getDb } from "@/lib/db";
-import { progress as progressTable } from "@/lib/schema";
 import { challenges } from "@/lib/challenges";
-import { createDefaultProgress, normalizeProgress, type ProgressState } from "@/lib/progress";
+import { createDefaultProgress } from "@/lib/progress";
 import { Logo } from "@/components/logo";
 
-export default async function ProgrammePage() {
-  const { userId } = await auth();
-  if (!userId) return null; // guarded by middleware; satisfies TS narrowing
-
-  const db = getDb();
-  const [row] = await db
-    .select()
-    .from(progressTable)
-    .where(eq(progressTable.userId, userId))
-    .limit(1);
-
+export default function ProgrammePage() {
   const starterCodeById = Object.fromEntries(
     challenges.map((c) => [c.id, c.starterCode])
   );
-  const data = normalizeProgress(
-    row?.data as Partial<ProgressState> | undefined,
-    createDefaultProgress(starterCodeById)
-  );
+  const data = createDefaultProgress(starterCodeById);
   const completedCount = challenges.filter((c) => data.completed[c.id]).length;
   const courseCompleted = data.courseCompleted;
   const assessmentStarted = data.assessmentStarted;
@@ -43,7 +25,6 @@ export default async function ProgrammePage() {
             Software Engineer Programme
           </p>
         </Link>
-        <UserButton />
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
