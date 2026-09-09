@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { Moon, ShieldAlert, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast";
@@ -22,6 +22,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useProgress } from "@/hooks/use-progress";
+import { useAntiCheat, SUSPEND_AFTER_VIOLATIONS } from "@/hooks/use-anti-cheat";
+import { cn } from "@/lib/utils";
 import {
   challenges,
   formatValue,
@@ -81,6 +83,14 @@ export default function ChallengePage(
   const { progress, setProgress, loaded } = useProgress(() =>
     createDefaultProgress(starterCodeById)
   );
+  const {
+    violationCount,
+    warning,
+    suspended,
+    acknowledge,
+    blockCopyOrCut,
+    blockContextMenu,
+  } = useAntiCheat();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -233,6 +243,7 @@ export default function ChallengePage(
     const nextStatus: Status = fails === 0 ? "passed" : "failed";
     setProgress((prev) => {
       if (!prev) return prev;
+      const alreadyCompleted = Boolean(prev.completed[challenge.id]);
       return {
         ...prev,
         results: {
@@ -247,6 +258,14 @@ export default function ChallengePage(
           nextStatus === "passed"
             ? { ...prev.completed, [challenge.id]: true }
             : prev.completed,
+        completedAt:
+          nextStatus === "passed" && !alreadyCompleted
+            ? { ...prev.completedAt, [challenge.id]: new Date().toISOString() }
+            : prev.completedAt,
+        attempts: {
+          ...prev.attempts,
+          [challenge.id]: (prev.attempts[challenge.id] ?? 0) + 1,
+        },
       };
     });
   }
@@ -274,7 +293,16 @@ export default function ChallengePage(
   }
 
   return (
-    <SidebarProvider className="h-screen min-h-0 bg-zinc-50 text-zinc-900 transition-colors dark:bg-zinc-950 dark:text-zinc-100">
+    <>
+    <SidebarProvider
+      className={cn(
+        "h-screen min-h-0 select-none bg-zinc-50 text-zinc-900 transition-colors dark:bg-zinc-950 dark:text-zinc-100",
+        (warning || suspended) && "pointer-events-none blur-sm"
+      )}
+      onCopy={blockCopyOrCut}
+      onCut={blockCopyOrCut}
+      onContextMenu={blockContextMenu}
+    >
       <AppSidebar
         challenges={challenges}
         activeIndex={index}
@@ -323,6 +351,15 @@ export default function ChallengePage(
           <span className="rounded-md border border-zinc-300 bg-zinc-100 px-2.5 py-1 font-mono text-sm tabular-nums text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
             {formatTime(secondsLeft)}
           </span>
+          {violationCount > 0 && (
+            <span
+              className="flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-sm font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-400"
+              title="Security warnings recorded during this assessment"
+            >
+              <ShieldAlert className="size-4" aria-hidden />
+              {violationCount}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setDarkMode((d) => !d)}
@@ -545,6 +582,74 @@ export default function ChallengePage(
       )}
       </SidebarInset>
     </SidebarProvider>
+
+    {suspended ? (
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="anti-cheat-suspended-title"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      >
+        <div className="w-full max-w-sm rounded-xl border border-red-200 bg-white p-6 text-center shadow-xl dark:border-red-900 dark:bg-zinc-900">
+          <ShieldAlert
+            className="mx-auto size-10 text-red-500 dark:text-red-400"
+            aria-hidden
+          />
+          <h2
+            id="anti-cheat-suspended-title"
+            className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+          >
+            Assessment Suspended
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            Thank you — your assessment has been ended and your account has
+            been suspended after {SUSPEND_AFTER_VIOLATIONS} recorded security
+            warnings.
+          </p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+            Please contact your assessment administrator if you believe this
+            was a mistake.
+          </p>
+        </div>
+      </div>
+    ) : (
+      warning && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="anti-cheat-warning-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+            <ShieldAlert
+              className="mx-auto size-10 text-amber-500 dark:text-amber-400"
+              aria-hidden
+            />
+            <h2
+              id="anti-cheat-warning-title"
+              className="mt-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+            >
+              Security Warning
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              {warning.message}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+              Warning {warning.count} of {SUSPEND_AFTER_VIOLATIONS} recorded
+              for this assessment.
+            </p>
+            <Button
+              size="sm"
+              onClick={acknowledge}
+              className="mt-5 w-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+            >
+              I Understand — Continue Assessment
+            </Button>
+          </div>
+        </div>
+      )
+    )}
+    </>
   );
 }
 

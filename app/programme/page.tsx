@@ -1,13 +1,23 @@
 import Link from "next/link";
 import { challenges } from "@/lib/challenges";
-import { createDefaultProgress } from "@/lib/progress";
+import { createDefaultProgress, normalizeProgress } from "@/lib/progress";
+import { readProgress } from "@/lib/progress-store";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
+
+// Reads live progress on every request — no database is configured, so
+// this comes from the in-memory store and must not be statically
+// prerendered at build time.
+export const dynamic = "force-dynamic";
 
 export default function ProgrammePage() {
   const starterCodeById = Object.fromEntries(
     challenges.map((c) => [c.id, c.starterCode])
   );
-  const data = createDefaultProgress(starterCodeById);
+  const data = normalizeProgress(
+    readProgress(),
+    createDefaultProgress(starterCodeById)
+  );
   const completedCount = challenges.filter((c) => data.completed[c.id]).length;
   const courseCompleted = data.courseCompleted;
   const assessmentStarted = data.assessmentStarted;
@@ -81,6 +91,8 @@ export default function ProgrammePage() {
           </Link>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

@@ -25,6 +25,10 @@ export type ProgressState = {
   code: Record<number, string>;
   results: Record<number, ChallengeResult>;
   completed: Record<number, boolean>;
+  /** ISO timestamp of the run that first passed a task's tests, keyed by challenge id. */
+  completedAt: Record<number, string | null>;
+  /** Number of times "Run Test" has been used, keyed by challenge id. */
+  attempts: Record<number, number>;
   solutionTimers: Record<number, SolutionTimer>;
   assessmentStarted: boolean;
   assessmentStartedAt: string | null;
@@ -48,6 +52,8 @@ export function createDefaultProgress(
     code: { ...starterCodeById },
     results: {},
     completed: {},
+    completedAt: {},
+    attempts: {},
     solutionTimers: {},
     assessmentStarted: false,
     assessmentStartedAt: null,
@@ -79,6 +85,8 @@ export function normalizeProgress(
     code: { ...defaults.code, ...data.code },
     results: { ...defaults.results, ...data.results },
     completed: { ...defaults.completed, ...data.completed },
+    completedAt: { ...defaults.completedAt, ...data.completedAt },
+    attempts: { ...defaults.attempts, ...data.attempts },
     solutionTimers: { ...defaults.solutionTimers, ...data.solutionTimers },
   };
 }
@@ -102,6 +110,17 @@ export function buildCertificateUrl(certificateId: string): string {
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
   return `${origin}/certificate/${certificateId}`;
+}
+
+/** Submission timestamps show date and time, e.g. "12 March 2026, 14:05". */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function formatCompletionDate(iso: string): string {

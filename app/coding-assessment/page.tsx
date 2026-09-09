@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CompletionScreen } from "@/components/completion-screen";
+import { SiteFooter } from "@/components/site-footer";
 import { useProgress } from "@/hooks/use-progress";
 import { challenges, getNextIncompleteSlug } from "@/lib/challenges";
+import { buildAssessmentResults } from "@/lib/assessment-results";
 import {
   buildCertificateUrl,
   computeExpiryDate,
@@ -81,6 +83,7 @@ export default function CodingAssessmentPage() {
     const expiryDateLabel = progress.expiryDate
       ? formatCertificateDate(progress.expiryDate)
       : null;
+    const { overall } = buildAssessmentResults(challenges, progress);
 
     return (
       <CompletionScreen
@@ -99,6 +102,7 @@ export default function CodingAssessmentPage() {
         issueDateLabel={issueDateLabel}
         expiryDateLabel={expiryDateLabel}
         isExpired={isCertificateExpired(progress.expiryDate)}
+        overall={overall}
         onReviewChallenges={() => router.push(`/challenges/${challenges[0].slug}`)}
       />
     );
@@ -188,6 +192,8 @@ export default function CodingAssessmentPage() {
           </>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

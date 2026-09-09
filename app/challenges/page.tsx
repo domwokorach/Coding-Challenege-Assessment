@@ -1,23 +1,14 @@
 import { redirect } from "next/navigation";
-import { getDb } from "@/lib/db";
-import { progress as progressTable, GUEST_USER_ID } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { readProgress } from "@/lib/progress-store";
 import { challenges, getNextIncompleteSlug } from "@/lib/challenges";
-import type { ProgressState } from "@/lib/progress";
 
-// Reads live progress from the database on every request — must not be
-// statically prerendered at build time (no DATABASE_URL is available then).
+// Reads live progress on every request — no database is configured, so
+// this comes from the in-memory store and must not be statically
+// prerendered at build time.
 export const dynamic = "force-dynamic";
 
-export default async function ChallengesIndexPage() {
-  const db = getDb();
-  const [row] = await db
-    .select()
-    .from(progressTable)
-    .where(eq(progressTable.userId, GUEST_USER_ID))
-    .limit(1);
-
-  const completed = (row?.data as ProgressState | undefined)?.completed ?? {};
+export default function ChallengesIndexPage() {
+  const completed = readProgress()?.completed ?? {};
   const slug = getNextIncompleteSlug(completed);
   redirect(`/challenges/${slug ?? challenges[0].slug}`);
 }

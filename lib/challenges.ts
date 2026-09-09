@@ -19,6 +19,7 @@ export type Challenge = {
   slug: string;
   category: string;
   title: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
   description: string;
   requirements: string[];
   functionName: string;
@@ -27,6 +28,9 @@ export type Challenge = {
   browserExpected: string;
   tests: TestCase[];
 };
+
+/** The programming language every challenge is written and evaluated in. */
+export const CHALLENGE_LANGUAGE = "JavaScript";
 
 function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
@@ -112,6 +116,7 @@ export const challenges: Challenge[] = [
     slug: "arrays",
     category: "Arrays",
     title: "Sum Numbers",
+    difficulty: "Beginner",
     description:
       "Create a function that calculates the sum of all numbers in an array.",
     requirements: [
@@ -140,6 +145,7 @@ console.log(sumNumbers([1, 2, 3, 4, 5]));
     slug: "functions",
     category: "Functions",
     title: "Function Return Type",
+    difficulty: "Beginner",
     description:
       "Create a function that identifies the type of a value and returns it as a string.",
     requirements: [
@@ -172,6 +178,7 @@ console.log(getValueType("Hello"));
     slug: "objects",
     category: "Objects",
     title: "Todo Task",
+    difficulty: "Intermediate",
     description: "Create a JavaScript object representing a todo task.",
     requirements: [
       "Accept title as a function parameter",

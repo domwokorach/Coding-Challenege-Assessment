@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
 import { GITHUB_DISCUSSIONS_URL } from "@/lib/config";
 import { COURSE_NAME } from "@/lib/progress";
 import type { Challenge } from "@/lib/challenges";
+import type { OverallResult } from "@/lib/assessment-results";
 
 export function CompletionScreen({
   challenges,
@@ -32,6 +34,7 @@ export function CompletionScreen({
   issueDateLabel,
   expiryDateLabel,
   isExpired,
+  overall,
   onReviewChallenges,
 }: {
   challenges: Challenge[];
@@ -49,6 +52,7 @@ export function CompletionScreen({
   issueDateLabel: string | null;
   expiryDateLabel: string | null;
   isExpired: boolean;
+  overall: OverallResult;
   onReviewChallenges: () => void;
 }) {
   const router = useRouter();
@@ -64,10 +68,18 @@ export function CompletionScreen({
     }
   }
 
+  function handleViewDashboard() {
+    router.push("/dashboard");
+  }
+
   async function handleCopyLink() {
     if (!hasActiveCertificate || !certificateUrl) return;
     await navigator.clipboard.writeText(certificateUrl);
     setCopied(true);
+    toast.add({
+      title: "Certificate link copied",
+      type: "success",
+    });
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -84,26 +96,42 @@ export function CompletionScreen({
                 Congratulations! 🎉
               </h1>
               <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                You&apos;ve successfully completed the entire{" "}
+                You&apos;ve successfully completed and submitted the{" "}
                 <span className="text-zinc-900 dark:text-zinc-200">
                   {COURSE_NAME}
                 </span>{" "}
-                — and what a journey it&apos;s been! Your dedication and hard
-                work have paid off. You have now completed all 3 chapters and
-                their coding challenges.
+                coding assessment — and what a journey it&apos;s been! You
+                have now completed all 3 chapters and their coding
+                challenges.
               </p>
+              {overall.totalTests > 0 && (
+                <p
+                  className="mt-4 inline-flex items-baseline gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900"
+                  aria-label={`Overall assessment score: ${overall.scoreEarned} out of ${overall.scoreMax}, ${overall.scorePercent} percent`}
+                >
+                  <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                    {overall.scoreEarned} / {overall.scoreMax}
+                  </span>
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-500">
+                    — {overall.scorePercent}%
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Certificate Section */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Your Certificate
+              </h2>
               {!nameConfirmed ? (
                 <>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Name on Certificate
+                  <p className="mt-3 text-sm font-medium text-amber-600 dark:text-amber-400">
+                    Status: Not yet generated
                   </p>
                   <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
                     Enter your full name exactly as you want it to appear on
-                    your certificate.
+                    your certificate to generate it.
                   </p>
 
                   <input
@@ -165,10 +193,7 @@ export function CompletionScreen({
                 </>
               ) : isExpired ? (
                 <>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Your Certificate
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-red-600 dark:text-red-400">
+                  <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
                     Status: Expired
                   </p>
                   <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
@@ -183,9 +208,6 @@ export function CompletionScreen({
                 </>
               ) : (
                 <>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Your Certificate
-                  </p>
                   <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
                     Your certificate is ready. You have successfully
                     completed all chapters and coding challenges in the{" "}
@@ -235,6 +257,23 @@ export function CompletionScreen({
                   )}
                 </>
               )}
+            </div>
+
+            {/* Dashboard Section */}
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                View your Dashboard
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                See a full breakdown of your tasks, test results, scores, and
+                correctness for this assessment.
+              </p>
+              <Button
+                onClick={handleViewDashboard}
+                className="mt-4 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+              >
+                View Dashboard
+              </Button>
             </div>
           </>
         )}
@@ -312,7 +351,10 @@ export function CompletionScreen({
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <nav
+          aria-label="Completion actions"
+          className="flex flex-col gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+        >
           <Button
             variant="ghost"
             onClick={onReviewChallenges}
@@ -320,14 +362,32 @@ export function CompletionScreen({
           >
             ← Review Challenges
           </Button>
-          <Button
-            onClick={handleViewCertificate}
-            disabled={!hasActiveCertificate}
-            className="bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
-          >
-            View Certificate
-          </Button>
-        </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/programme")}
+              className="border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+            >
+              Return to Software Engineer Programme
+            </Button>
+            {courseCompleted && (
+              <Button
+                variant="outline"
+                onClick={handleViewDashboard}
+                className="border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              >
+                View Dashboard
+              </Button>
+            )}
+            <Button
+              onClick={handleViewCertificate}
+              disabled={!hasActiveCertificate}
+              className="bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+            >
+              View Certificate
+            </Button>
+          </div>
+        </nav>
       </div>
     </div>
   );

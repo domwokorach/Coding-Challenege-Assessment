@@ -14,7 +14,7 @@ export default async function CertificatePage(
   props: PageProps<"/certificate/[id]">
 ) {
   const { id } = await props.params;
-  const progress = await getProgressByCertificateId(id);
+  const progress = getProgressByCertificateId(id);
 
   if (
     !progress ||
