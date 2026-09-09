@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CandidateDashboard } from "@/components/candidate-dashboard";
 import { challenges } from "@/lib/challenges";
-import { createDefaultProgress, normalizeProgress, type ProgressState } from "@/lib/progress";
+import { createDefaultProgress, normalizeProgress } from "@/lib/progress";
 import { readProgress } from "@/lib/progress-store";
 import { buildAssessmentResults } from "@/lib/assessment-results";
 
@@ -15,7 +15,7 @@ export default function DashboardPage() {
     challenges.map((c) => [c.id, c.starterCode])
   );
   const progress = normalizeProgress(
-    readProgress() as Partial<ProgressState> | null,
+    readProgress(),
     createDefaultProgress(starterCodeById)
   );
 
