@@ -1,41 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Software Engineer Programme — Coding Assessment
 
-## Getting Started
+A self-contained coding assessment platform: candidates work through a series
+of timed JavaScript coding challenges in an in-browser editor, get an
+auto-graded pass/fail per challenge, and receive a shareable completion
+certificate at the end.
 
-First, run the development server:
+## Features
+
+- **Coding challenges** — in-browser code editor with instructions, expected
+  input/output, and an automated test runner per challenge
+  ([app/challenges/[slug]](app/challenges/%5Bslug%5D)).
+- **Progress tracking** — code, test results, and completion state are saved
+  automatically as the candidate works.
+- **Anti-cheat protections** — clipboard (copy/cut), right-click, and
+  tab-switch/focus-loss are detected and warned on; the assessment locks
+  after repeated violations. See [hooks/use-anti-cheat.ts](hooks/use-anti-cheat.ts)
+  for exactly what is (and isn't) detectable from a browser tab, and why.
+- **Results dashboard** — a scoring breakdown of completed tasks, pass rates,
+  and time spent ([app/dashboard](app/dashboard)).
+- **Certificates** — a public, shareable certificate page once the course is
+  completed and the candidate's name is confirmed
+  ([app/certificate/[id]](app/certificate/%5Bid%5D)).
+- **Legal pages** — Terms and Privacy Policy templates
+  ([app/terms](app/terms), [app/privacy](app/privacy)).
+
+## Tech stack
+
+- [Next.js](https://nextjs.org) (App Router, Turbopack) + React 19 + TypeScript
+- Tailwind CSS + [shadcn](https://ui.shadcn.com)-based UI components
+- No authentication and no external database — see [Data storage](#data-storage) below
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other scripts:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build   # production build
+npm run start   # run the production build
+npm run lint    # eslint
+```
 
-## Learn More
+## Data storage
 
-To learn more about Next.js, take a look at the following resources:
+This app has no authentication — every visitor shares one implicit "guest"
+progress record — and no database is configured. Progress and certificates
+are held in an in-memory store on the server
+([lib/progress-store.ts](lib/progress-store.ts)).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This means state resets on every server restart/redeploy and isn't shared
+across multiple serverless instances. That's a deliberate trade-off for
+running with zero external services configured, not a bug. Wiring up a real
+database is a drop-in replacement for the three functions in
+`lib/progress-store.ts` if persistence is needed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```text
+app/
+  page.tsx                 Landing page
+  programme/                Programme overview + progress summary
+  challenges/[slug]/        Challenge workspace (editor, tests, anti-cheat)
+  coding-assessment/         Assessment start/continue/completion screen
+  dashboard/                 Results dashboard
+  certificate/[id]/         Public certificate page
+  api/progress/              Progress read/write endpoint
+  terms/, privacy/           Legal page templates
+lib/
+  challenges/                 Challenge definitions and test cases
+  progress.ts                 Progress state shape and helpers
+  progress-store.ts           In-memory progress/certificate storage
+  assessment-results.ts       Score/results calculation
+hooks/
+  use-progress.ts             Loads/saves progress via the API route
+  use-anti-cheat.ts           Copy/context-menu/tab-switch detection
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploying
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# assessment-js
-# Coding-Challenege-Assessment
-# Coding-Challenege-Assessment
-# Coding-Challenege-Assessment
-# Coding-Challenege-Assessment
+This project has no environment variable requirements and deploys as a
+standard Next.js app (e.g. to [Vercel](https://vercel.com/new)):
+
+```bash
+npm run build
+```

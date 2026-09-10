@@ -160,3 +160,33 @@
     @apply font-sans;
   }
 }
+
+@keyframes border-beam {
+  0% {
+    offset-distance: var(--border-beam-offset, 0%);
+  }
+  100% {
+    offset-distance: calc(100% + var(--border-beam-offset, 0%));
+  }
+}
+
+@keyframes border-beam-reverse {
+  0% {
+    offset-distance: calc(100% - var(--border-beam-offset, 0%));
+  }
+  100% {
+    offset-distance: calc(0% - var(--border-beam-offset, 0%));
+  }
+}
+
+.animate-border-beam {
+  animation-name: border-beam;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.animate-border-beam-reverse {
+  animation-name: border-beam-reverse;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}

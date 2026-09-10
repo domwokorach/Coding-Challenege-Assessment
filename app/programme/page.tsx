@@ -1,21 +1,27 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { challenges } from "@/lib/challenges";
 import { createDefaultProgress, normalizeProgress } from "@/lib/progress";
 import { readProgress } from "@/lib/progress-store";
+import { getAuthenticatedUserId } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
 
-// Reads live progress on every request — no database is configured, so
-// this comes from the in-memory store and must not be statically
+// Reads live progress on every request — must not be statically
 // prerendered at build time.
 export const dynamic = "force-dynamic";
 
-export default function ProgrammePage() {
+export default async function ProgrammePage() {
+  // proxy.ts already gates this route, but the page re-verifies rather
+  // than trusting that alone — belt and suspenders.
+  const userId = await getAuthenticatedUserId();
+  if (!userId) redirect("/login?next=/programme");
+
   const starterCodeById = Object.fromEntries(
     challenges.map((c) => [c.id, c.starterCode])
   );
   const data = normalizeProgress(
-    readProgress(),
+    await readProgress(userId),
     createDefaultProgress(starterCodeById)
   );
   const completedCount = challenges.filter((c) => data.completed[c.id]).length;
@@ -34,6 +40,12 @@ export default function ProgrammePage() {
           <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Software Engineer Programme
           </p>
+        </Link>
+        <Link
+          href="/account"
+          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        >
+          Account
         </Link>
       </header>
 

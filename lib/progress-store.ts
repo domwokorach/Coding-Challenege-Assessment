@@ -1,33 +1,56 @@
+import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { progress as progressTable } from "@/lib/schema";
 import type { ProgressState } from "@/lib/progress";
 
 /**
- * In-memory, single-process store — no database, no environment variables.
- * The app has no authentication, so there is exactly one progress record
- * (the shared "guest" record) for every visitor.
- *
- * Trade-off: state lives only in this server process's memory. It resets on
- * every server restart/redeploy and is not shared across multiple
- * serverless function instances. That's an accepted limitation of running
- * with no database configured, not a bug to work around.
+ * Progress is now tied to a real authenticated user row rather than one
+ * shared in-memory "guest" record. `readProgress`/`writeProgress` take the
+ * authenticated user's id (extracted server-side from the verified JWT —
+ * never from a request body/query param) and operate on that user's own
+ * `progress` row.
  */
-type StoredProgress = {
-  data: ProgressState;
-  certificateId: string | null;
-};
-
-let store: StoredProgress | null = null;
-
-export function readProgress(): ProgressState | null {
-  return store?.data ?? null;
+export async function readProgress(
+  userId: string
+): Promise<ProgressState | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ data: progressTable.data })
+    .from(progressTable)
+    .where(eq(progressTable.userId, userId))
+    .limit(1);
+  return (rows[0]?.data as ProgressState | undefined) ?? null;
 }
 
-export function writeProgress(data: ProgressState): void {
-  store = { data, certificateId: data.certificateId ?? null };
+export async function writeProgress(
+  userId: string,
+  data: ProgressState
+): Promise<void> {
+  const db = getDb();
+  const certificateId = data.certificateId ?? null;
+  await db
+    .insert(progressTable)
+    .values({ userId, data, certificateId, updatedAt: new Date() })
+    .onConflictDoUpdate({
+      target: progressTable.userId,
+      set: { data, certificateId, updatedAt: new Date() },
+    });
 }
 
-export function readProgressByCertificateId(
+/**
+ * Certificates are public by design — anyone with the link can verify one,
+ * without being signed in or owning the record. Looked up by the
+ * denormalized certificateId, not the owning user, so this stays
+ * unauthenticated by design.
+ */
+export async function readProgressByCertificateId(
   certificateId: string
-): ProgressState | null {
-  if (store?.certificateId === certificateId) return store.data;
-  return null;
+): Promise<ProgressState | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ data: progressTable.data })
+    .from(progressTable)
+    .where(eq(progressTable.certificateId, certificateId))
+    .limit(1);
+  return (rows[0]?.data as ProgressState | undefined) ?? null;
 }

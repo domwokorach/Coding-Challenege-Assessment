@@ -1,10 +1,36 @@
+"use client";
+
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
+import { toast } from "@/components/ui/toast";
+
+function AccountDeletedNotice() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("accountDeleted") === "1") {
+      toast.add({
+        title: "Account deleted",
+        description: "Your account has been deleted.",
+        type: "success",
+      });
+    }
+    // Only ever check once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
 
 export default function WelcomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <Suspense>
+        <AccountDeletedNotice />
+      </Suspense>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
         <div>
           <Logo size={88} className="mx-auto mb-5" />

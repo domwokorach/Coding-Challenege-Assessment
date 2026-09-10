@@ -1,26 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CandidateDashboard } from "@/components/candidate-dashboard";
+import { useProgress } from "@/hooks/use-progress";
 import { challenges } from "@/lib/challenges";
-import { createDefaultProgress, normalizeProgress } from "@/lib/progress";
-import { readProgress } from "@/lib/progress-store";
+import { createDefaultProgress } from "@/lib/progress";
 import { buildAssessmentResults } from "@/lib/assessment-results";
-
-// Reads live progress on every request — must not be statically
-// prerendered, so the dashboard always reflects the latest saved results.
-export const dynamic = "force-dynamic";
 
 export default function DashboardPage() {
   const starterCodeById = Object.fromEntries(
     challenges.map((c) => [c.id, c.starterCode])
   );
-  const progress = normalizeProgress(
-    readProgress(),
+  const { progress, loaded } = useProgress(() =>
     createDefaultProgress(starterCodeById)
   );
-
-  const hasStarted = progress.assessmentStarted;
-  const results = buildAssessmentResults(challenges, progress);
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -44,10 +38,14 @@ export default function DashboardPage() {
       </header>
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10 sm:py-12">
-        {hasStarted ? (
+        {!loaded || !progress ? (
+          <p className="py-24 text-center text-sm text-zinc-500 dark:text-zinc-500">
+            Loading…
+          </p>
+        ) : progress.assessmentStarted ? (
           <CandidateDashboard
             learnerName={progress.learnerName}
-            results={results}
+            results={buildAssessmentResults(challenges, progress)}
           />
         ) : (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">

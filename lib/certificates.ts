@@ -8,6 +8,6 @@ import type { ProgressState } from "@/lib/progress";
  */
 export function getProgressByCertificateId(
   certificateId: string
-): ProgressState | null {
+): Promise<ProgressState | null> {
   return readProgressByCertificateId(certificateId);
 }
