@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { formatDateTime } from "@/lib/assessment/progress";
 import { formatClock, type AssessmentRecording } from "@/lib/assessment/recording";
 import { getLanguageOption } from "@/lib/assessment/languages";
@@ -44,7 +43,7 @@ export function RecordingSummaryCard({
         )}
       >
         <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Assessment Timeline
+          Recording Summary
         </h3>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           No recorded session is available for this assessment yet.
@@ -66,7 +65,7 @@ export function RecordingSummaryCard({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Assessment Timeline
+          Recording Summary
         </h3>
         <span
           className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
@@ -104,13 +103,6 @@ export function RecordingSummaryCard({
         <Field label="Run Code attempts" value={String(recording.counts.runCodeCount)} />
         <Field label="Test runs" value={String(recording.counts.testRunCount)} />
       </dl>
-
-      <Link
-        href={`/dashboard/report/timeline/${recording.id}`}
-        className="mt-5 inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
-      >
-        View Assessment Timeline
-      </Link>
     </div>
   );
 }

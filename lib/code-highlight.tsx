@@ -1,13 +1,14 @@
 /**
- * Minimal, dependency-free syntax highlighting for the Timeline Player's
- * code replay. The app has no highlighting library and no Monaco/CodeMirror
- * editor to borrow one from (`CodeEditor` is a plain textarea) — this is a
- * small regex tokenizer covering JS/TS-family syntax (the only executable
- * language today), good enough for a read-only replay view rather than a
- * full language-aware editor.
+ * Minimal, dependency-free syntax highlighting used both by the live
+ * CodeEditor overlay and the Timeline Player's code replay. The app has no
+ * highlighting library and no Monaco/CodeMirror editor — this is a small
+ * regex tokenizer covering the JS/TS-family and Java/C-family keyword sets
+ * (the languages actually offered in the editor's language selector), good
+ * enough for editor/replay display rather than full language-aware parsing.
  */
 
 const KEYWORDS = new Set([
+  // JS/TS
   "const", "let", "var", "function", "return", "if", "else", "for", "while",
   "do", "switch", "case", "break", "continue", "new", "class", "extends",
   "typeof", "instanceof", "in", "of", "try", "catch", "finally", "throw",
@@ -15,6 +16,10 @@ const KEYWORDS = new Set([
   "super", "null", "undefined", "true", "false", "void", "delete", "static",
   "get", "set", "interface", "type", "enum", "implements", "public",
   "private", "protected", "readonly", "as",
+  // Java/C-family additions
+  "int", "String", "boolean", "double", "float", "long", "char", "byte",
+  "short", "package", "throws", "final", "abstract", "synchronized",
+  "native", "transient", "volatile", "assert", "package_info",
 ]);
 
 type TokenType = "comment" | "string" | "keyword" | "number" | "plain";

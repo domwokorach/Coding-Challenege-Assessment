@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { CheckCircle2, ChevronDown, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Code2, TriangleAlert, XCircle } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -66,7 +66,6 @@ function Metric({ label, value }: { label: string; value: string }) {
 function TaskRow({ task }: { task: TaskResult }) {
   const panelId = useId();
   const attempted = task.totalCount > 0;
-  const correctnessLabel = attempted ? `${task.scorePercent}%` : "—";
   const taskScoreLabel = attempted ? `${task.scorePercent}%` : "—";
   const timeSpentLabel =
     task.timeSpentMs !== null ? formatDurationMs(task.timeSpentMs) : "—";
@@ -83,20 +82,28 @@ function TaskRow({ task }: { task: TaskResult }) {
             className="size-4 shrink-0 text-zinc-400 transition-transform duration-200 motion-reduce:transition-none dark:text-zinc-600"
             aria-hidden
           />
+          <Code2
+            className="size-4 shrink-0 text-zinc-400 dark:text-zinc-600"
+            aria-hidden
+          />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {task.title}
+              {task.runtimeError && (
+                <TriangleAlert
+                  className="size-3.5 shrink-0 text-amber-500 dark:text-amber-400"
+                  aria-label="This task has a compiler/runtime error"
+                />
+              )}
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-500">
-              {task.category}
+              {task.language}
             </p>
           </div>
         </div>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 pl-6 sm:flex sm:shrink-0 sm:items-center sm:gap-6 sm:pl-0">
-          <Metric label="Time Spent" value={timeSpentLabel} />
-          <Metric label="Correctness" value={correctnessLabel} />
-          <Metric label="Performance" value="—" />
+          <Metric label="Effective time spent" value={timeSpentLabel} />
           <Metric label="Score" value={taskScoreLabel} />
         </dl>
       </CollapsibleTrigger>
@@ -158,7 +165,7 @@ export function TaskSummaryPanel({
       )}
     >
       <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Task Summary
+        Tasks Summary
       </h3>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         Select a task to see its correctness tests, submission time, and

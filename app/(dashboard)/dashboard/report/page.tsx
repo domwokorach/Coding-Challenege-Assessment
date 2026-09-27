@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Tabs,
@@ -14,12 +14,13 @@ import { CandidateFeedbackCard } from "@/components/dashboard/candidate-feedback
 import { TaskInsights } from "@/components/dashboard/task-insights";
 import { AssessmentTimeline } from "@/components/dashboard/assessment-timeline";
 import { RecordingSummaryCard } from "@/components/dashboard/recording-summary-card";
+import { TimelinePlayer } from "@/components/dashboard/timeline-player";
 import { useProgress } from "@/hooks/use-progress";
 import { challenges } from "@/lib/assessment/challenges";
 import { COURSE_NAME, createDefaultProgress } from "@/lib/assessment/progress";
 import { buildAssessmentResults, getEvaluationState } from "@/lib/assessment/scoring";
 import { buildAssessmentTimeline } from "@/lib/assessment/timeline";
-import type { AssessmentRecording } from "@/lib/assessment/recording";
+import type { AssessmentRecording, AssessmentTimelineEvent } from "@/lib/assessment/recording";
 
 function useRecording(assessmentId: string | null): AssessmentRecording | null {
   const [recording, setRecording] = useState<AssessmentRecording | null>(null);
@@ -39,6 +40,26 @@ function useRecording(assessmentId: string | null): AssessmentRecording | null {
   }, [assessmentId]);
 
   return recording;
+}
+
+function useRecordingEvents(recordingId: string | null): AssessmentTimelineEvent[] {
+  const [events, setEvents] = useState<AssessmentTimelineEvent[]>([]);
+
+  useEffect(() => {
+    if (!recordingId) return;
+    let cancelled = false;
+    fetch(`/api/recording/${recordingId}/events`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { events?: AssessmentTimelineEvent[] } | null) => {
+        if (!cancelled) setEvents(data?.events ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [recordingId]);
+
+  return events;
 }
 
 type Profile = { firstName: string | null; lastName: string | null } | null;
@@ -77,6 +98,18 @@ export default function CandidateReportPage() {
 
   const candidateName = useCandidateName(progress?.learnerName ?? "");
   const recording = useRecording(progress?.assessmentId ?? null);
+  const recordingEvents = useRecordingEvents(recording?.id ?? null);
+  const [seekToMs, setSeekToMs] = useState<number | null>(null);
+  const replayRef = useRef<HTMLDivElement>(null);
+
+  function handleSelectTimelineEvent(atIso: string) {
+    if (!recording) return;
+    const startTimestamp =
+      recordingEvents[0]?.timestamp ??
+      (recording.startedAt ? Date.parse(recording.startedAt) : Date.now());
+    setSeekToMs(Date.parse(atIso) - startTimestamp);
+    replayRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   if (!loaded || !progress) {
     return (
@@ -168,8 +201,17 @@ export default function CandidateReportPage() {
           </TabsContent>
 
           <TabsContent value="timeline" className="mt-6 flex flex-col gap-6">
+            <AssessmentTimeline events={timeline} onSelectEvent={handleSelectTimelineEvent} />
             <RecordingSummaryCard recording={recording} />
-            <AssessmentTimeline events={timeline} />
+            {recording && recordingEvents.length > 0 && (
+              <div ref={replayRef}>
+                <TimelinePlayer
+                  recording={recording}
+                  events={recordingEvents}
+                  seekToMs={seekToMs}
+                />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

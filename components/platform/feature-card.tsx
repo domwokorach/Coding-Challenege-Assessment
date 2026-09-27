@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { GlareHover } from "@/registry/magicui/glare-hover";
 import { cn } from "@/lib/utils";
 
 export function FeatureCard({
@@ -13,9 +14,16 @@ export function FeatureCard({
   className?: string;
 }) {
   return (
-    <div
+    <GlareHover
+      width="100%"
+      height="100%"
+      background="transparent"
+      color="#ffffff"
+      opacity={0.15}
+      size={220}
+      duration={800}
       className={cn(
-        "rounded-3xl border border-border/60 bg-card p-6 ring-1 ring-foreground/5 transition-colors hover:border-border dark:ring-foreground/10",
+        "block cursor-default rounded-3xl border border-border/60 bg-card p-6 text-left ring-1 ring-foreground/5 transition-colors hover:border-border dark:ring-foreground/10",
         className
       )}
     >
@@ -26,6 +34,6 @@ export function FeatureCard({
       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
         {description}
       </p>
-    </div>
+    </GlareHover>
   );
 }

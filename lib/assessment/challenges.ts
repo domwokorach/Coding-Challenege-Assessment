@@ -20,6 +20,8 @@ export type Challenge = {
   category: string;
   title: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  /** Suggested time to complete this task, shown on the candidate report's Task Insights. */
+  recommendedMinutes: number;
   description: string;
   requirements: string[];
   functionName: string;
@@ -117,6 +119,7 @@ export const challenges: Challenge[] = [
     category: "Arrays",
     title: "Sum Numbers",
     difficulty: "Beginner",
+    recommendedMinutes: 20,
     description:
       "Create a function that calculates the sum of all numbers in an array.",
     requirements: [
@@ -146,6 +149,7 @@ console.log(sumNumbers([1, 2, 3, 4, 5]));
     category: "Functions",
     title: "Function Return Type",
     difficulty: "Beginner",
+    recommendedMinutes: 20,
     description:
       "Create a function that identifies the type of a value and returns it as a string.",
     requirements: [
@@ -179,6 +183,7 @@ console.log(getValueType("Hello"));
     category: "Objects",
     title: "Todo Task",
     difficulty: "Intermediate",
+    recommendedMinutes: 40,
     description: "Create a JavaScript object representing a todo task.",
     requirements: [
       "Accept title as a function parameter",

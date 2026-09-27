@@ -25,7 +25,7 @@ export function buildAssessmentTimeline(
   if (progress.assessmentStartedAt) {
     events.push({
       id: "assessment-started",
-      label: "Assessment started",
+      label: "Started",
       at: progress.assessmentStartedAt,
     });
   }
@@ -43,7 +43,7 @@ export function buildAssessmentTimeline(
     if (submittedAt) {
       events.push({
         id: `task-submitted-${challenge.id}`,
-        label: `${challenge.title} submitted`,
+        label: `Task ${challenge.title} submitted`,
         at: submittedAt,
       });
     }
@@ -60,7 +60,7 @@ export function buildAssessmentTimeline(
   if (progress.completionDate) {
     events.push({
       id: "assessment-completed",
-      label: "Assessment completed",
+      label: "Finished",
       at: progress.completionDate,
     });
   }

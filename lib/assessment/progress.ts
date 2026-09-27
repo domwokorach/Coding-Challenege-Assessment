@@ -11,6 +11,15 @@ export type ChallengeResult = {
 
 export const CERTIFICATE_VALIDITY_YEARS = 4;
 
+/**
+ * sessionStorage key set right before navigating to the completion screen
+ * from an actual `submitAssessment()` call — read once by `CompletionScreen`
+ * to decide whether to celebrate with confetti. Not set on an ordinary
+ * revisit to an already-completed assessment, so confetti only ever fires
+ * for the submission that just happened.
+ */
+export const JUST_COMPLETED_ASSESSMENT_KEY = "assessment-just-completed";
+
 /** Minutes a learner must spend on a challenge before its solution unlocks. */
 export const SOLUTION_UNLOCK_MINUTES = 5;
 export const SOLUTION_UNLOCK_MS = SOLUTION_UNLOCK_MINUTES * 60 * 1000;

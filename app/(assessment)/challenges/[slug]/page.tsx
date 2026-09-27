@@ -58,6 +58,7 @@ import {
   createSolutionTimer,
   formatCountdown,
   formatDurationWords,
+  JUST_COMPLETED_ASSESSMENT_KEY,
   solutionSecondsRemaining,
   type ChallengeStatus as Status,
   type ChallengeResult,
@@ -395,6 +396,12 @@ export default function ChallengePage(
         };
       });
       setSubmitDialogOpen(false);
+      try {
+        sessionStorage.setItem(JUST_COMPLETED_ASSESSMENT_KEY, "1");
+      } catch {
+        // sessionStorage can throw in locked-down/private-browsing contexts —
+        // worst case the completion screen just skips the confetti.
+      }
       router.push("/coding-assessment");
     } catch {
       setSubmitError(
@@ -476,7 +483,7 @@ export default function ChallengePage(
   );
 
   const filesPanel = isNavigating ? null : (
-    <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-zinc-50 dark:bg-zinc-900/40">
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-zinc-50 dark:bg-zinc-950/60">
       <p className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500">
         Files
       </p>
@@ -525,7 +532,7 @@ export default function ChallengePage(
         onValueChange={(value) => changeActiveFile(value as ActiveFile)}
         className="min-h-0 flex-1 gap-0"
       >
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-zinc-300 bg-white pr-3 dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-zinc-300 bg-white pr-3 dark:border-zinc-900 dark:bg-black">
           <TabsList
             variant="line"
             className="h-auto shrink-0 justify-start rounded-none border-b-0 bg-transparent px-3 py-2"
@@ -574,7 +581,7 @@ export default function ChallengePage(
         </TabsContent>
         <TabsContent
           value="test-input"
-          className="min-h-0 flex-1 overflow-y-auto bg-white p-5 dark:bg-zinc-900"
+          className="min-h-0 flex-1 overflow-y-auto bg-white p-5 dark:bg-black"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
             {challenge.category} Challenge
@@ -593,7 +600,7 @@ export default function ChallengePage(
           </pre>
         </TabsContent>
       </Tabs>
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-zinc-200 bg-white px-3 py-2 dark:border-zinc-900 dark:bg-black">
         <Button
           size="sm"
           onClick={handleReset}
@@ -627,8 +634,8 @@ export default function ChallengePage(
   const testOutputSection = isNavigating ? (
     <TaskLoadingPanel />
   ) : (
-    <div className="flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
+    <div className="flex h-full min-h-0 flex-col bg-white dark:bg-black">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2 dark:border-zinc-900">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
           Test Output
         </h2>
@@ -637,7 +644,7 @@ export default function ChallengePage(
           onClick={() => void handleRunTest()}
           disabled={status === "running"}
           aria-label={status === "running" ? "Running code" : "Run code"}
-          className="gap-1.5 bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+          className="gap-1.5 border border-transparent bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
           {status === "running" ? (
             <>
@@ -672,7 +679,7 @@ export default function ChallengePage(
     <>
     <SidebarProvider
       className={cn(
-        "h-screen min-h-0 select-none bg-zinc-50 text-zinc-900 transition-colors dark:bg-zinc-950 dark:text-zinc-100",
+        "h-screen min-h-0 select-none bg-zinc-50 text-zinc-900 transition-colors dark:bg-black dark:text-zinc-100",
         warning && "pointer-events-none blur-sm"
       )}
       onCopy={blockCopyOrCut}
@@ -690,7 +697,7 @@ export default function ChallengePage(
       <SidebarInset className="h-screen min-h-0">
       {/* Top navigation */}
       <header
-        className="flex shrink-0 flex-col gap-2 border-b border-zinc-200 bg-white px-3 py-2.5 sm:px-6 sm:py-3 dark:border-zinc-800 dark:bg-zinc-950"
+        className="flex shrink-0 flex-col gap-2 border-b border-zinc-200 bg-white px-3 py-2.5 sm:px-6 sm:py-3 dark:border-zinc-900 dark:bg-black"
         style={{
           paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
           paddingRight: "max(0.75rem, env(safe-area-inset-right))",
@@ -722,8 +729,9 @@ export default function ChallengePage(
             <Button
               size="sm"
               onClick={() => setSubmitDialogOpen(true)}
-              className="bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+              className="gap-1.5 rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
             >
+              <CheckIcon className="size-3.5" aria-hidden />
               Submit Assessment
             </Button>
             <LogoutButton redirectTo="/" />
@@ -732,7 +740,8 @@ export default function ChallengePage(
 
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            <span className="rounded-md border border-zinc-300 bg-zinc-100 px-2 py-1 font-mono text-xs tabular-nums text-zinc-900 sm:px-2.5 sm:text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
+            <span className="flex items-center gap-1.5 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-1 font-mono text-xs tabular-nums text-zinc-900 sm:px-2.5 sm:text-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
+              <Clock className="size-3.5 shrink-0 text-zinc-500 dark:text-zinc-500" aria-hidden />
               {formatTime(secondsLeft)}
             </span>
             {recordingStatus !== "idle" && (
@@ -809,7 +818,7 @@ export default function ChallengePage(
         <ResizablePanelGroup className="min-h-0 flex-1">
           {/* Task Description panel */}
           <ResizablePanel defaultSize={320} minSize={240} maxSize={520} className="min-h-0">
-            <section className="h-full min-h-0 overflow-y-auto border-r border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <section className="h-full min-h-0 overflow-y-auto border-r border-zinc-200 bg-white p-5 dark:border-zinc-900 dark:bg-black">
               {instructionsContent}
             </section>
           </ResizablePanel>
@@ -820,8 +829,8 @@ export default function ChallengePage(
           <ResizablePanel minSize={560} className="min-h-0">
             <ResizablePanelGroup orientation="vertical" className="h-full min-h-0">
               <ResizablePanel minSize={220} className="min-h-0">
-                <div className="flex h-full min-h-0 flex-col bg-zinc-100 dark:bg-zinc-950">
-                  <div className="flex shrink-0 items-center border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex h-full min-h-0 flex-col bg-zinc-100 dark:bg-black">
+                  <div className="flex shrink-0 items-center border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-900 dark:bg-black">
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                       Solution
                     </h2>
@@ -829,11 +838,11 @@ export default function ChallengePage(
                   <div className="grid min-h-0 flex-1 grid-cols-[180px_1fr]">
                     <section
                       aria-label="File explorer"
-                      className="min-h-0 border-r border-zinc-200 dark:border-zinc-800"
+                      className="min-h-0 border-r border-zinc-200 dark:border-zinc-900"
                     >
                       {filesPanel}
                     </section>
-                    <section className="flex min-h-0 flex-col bg-white dark:bg-zinc-900">
+                    <section className="flex min-h-0 flex-col bg-white dark:bg-black">
                       {editorSection}
                     </section>
                   </div>
@@ -867,7 +876,7 @@ export default function ChallengePage(
       >
         <TabsList
           variant="line"
-          className="h-auto shrink-0 justify-start gap-1 overflow-x-auto rounded-none border-b border-zinc-200 bg-white px-2 py-1 dark:border-zinc-800 dark:bg-zinc-900"
+          className="h-auto shrink-0 justify-start gap-1 overflow-x-auto rounded-none border-b border-zinc-200 bg-white px-2 py-1 dark:border-zinc-900 dark:bg-black"
         >
           <TabsTrigger
             value="task"
@@ -891,26 +900,26 @@ export default function ChallengePage(
 
         <TabsContent
           value="task"
-          className="min-h-0 flex-1 overflow-y-auto bg-white p-5 dark:bg-zinc-900"
+          className="min-h-0 flex-1 overflow-y-auto bg-white p-5 dark:bg-black"
         >
           {instructionsContent}
         </TabsContent>
 
         <TabsContent
           value="code"
-          className="grid min-h-0 flex-1 grid-cols-[140px_1fr] bg-zinc-100 dark:bg-zinc-950"
+          className="grid min-h-0 flex-1 grid-cols-[140px_1fr] bg-zinc-100 dark:bg-black"
         >
-          <section aria-label="File explorer" className="min-h-0 border-r border-zinc-200 dark:border-zinc-800">
+          <section aria-label="File explorer" className="min-h-0 border-r border-zinc-200 dark:border-zinc-900">
             {filesPanel}
           </section>
-          <section className="flex min-h-0 flex-col bg-white dark:bg-zinc-900">
+          <section className="flex min-h-0 flex-col bg-white dark:bg-black">
             {editorSection}
           </section>
         </TabsContent>
 
         <TabsContent
           value="tests"
-          className="flex min-h-0 flex-1 flex-col bg-white dark:bg-zinc-900"
+          className="flex min-h-0 flex-1 flex-col bg-white dark:bg-black"
         >
           {testOutputSection}
         </TabsContent>
@@ -918,7 +927,7 @@ export default function ChallengePage(
 
       {/* Bottom navigation */}
       <footer
-        className="flex shrink-0 flex-col gap-2 border-t border-zinc-200 bg-white px-3 py-3 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950"
+        className="flex shrink-0 flex-col gap-2 border-t border-zinc-200 bg-white px-3 py-3 sm:px-6 dark:border-zinc-900 dark:bg-black"
         style={{
           paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
           paddingRight: "max(0.75rem, env(safe-area-inset-right))",
@@ -972,13 +981,17 @@ export default function ChallengePage(
 
       {/* IDE-style status bar */}
       <div
-        className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-zinc-200 bg-zinc-100 px-3 py-1 text-xs text-zinc-600 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
+        className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-zinc-200 bg-zinc-100 px-3 py-1 text-xs text-zinc-600 sm:px-6 dark:border-zinc-900 dark:bg-black dark:text-zinc-500"
         style={{
           paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
           paddingRight: "max(0.75rem, env(safe-area-inset-right))",
         }}
       >
         <div className="flex items-center gap-3" role="status" aria-live="polite">
+          <span className="hidden sm:inline">Press Escape to leave the editor</span>
+          <span aria-hidden className="hidden text-zinc-300 sm:inline dark:text-zinc-700">
+            |
+          </span>
           <span className="flex items-center gap-1.5">
             <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
             Connected

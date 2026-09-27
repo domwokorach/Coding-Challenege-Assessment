@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  FastForward,
   Pause,
   Play,
-  RotateCcw,
-  RotateCw,
+  Rewind,
+  SkipBack,
   SkipForward,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,9 +70,18 @@ function buildEventMarkers(events: AssessmentTimelineEvent[]): AssessmentTimelin
 export function TimelinePlayer({
   recording,
   events,
+  seekToMs,
 }: {
   recording: AssessmentRecording;
   events: AssessmentTimelineEvent[];
+  /**
+   * Offset (ms from session start) to jump to, set by an outer "Timeline"
+   * view when the candidate picks a task's submitted-at event from the
+   * simple event list above this player. Re-seeks whenever the value
+   * changes; `null`/`undefined` has no effect (so this player can also be
+   * used standalone without an external seek source).
+   */
+  seekToMs?: number | null;
 }) {
   const reducedMotion = useReducedMotion();
   const startTimestamp = events[0]?.timestamp ?? Date.parse(recording.startedAt ?? "") ?? Date.now();
@@ -149,6 +159,15 @@ export function TimelinePlayer({
     seekTo(event.timestamp - startTimestamp);
   }
 
+  useEffect(() => {
+    if (seekToMs === null || seekToMs === undefined) return;
+    setPlaying(false);
+    seekTo(seekToMs);
+    // Only re-seek when the requested offset itself changes — `seekTo`
+    // closes over `durationMs`, which is fine to leave out here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seekToMs]);
+
   function jumpToNext(type: AssessmentEventType) {
     const matches = events.filter((e) => e.type === type);
     if (matches.length === 0) return;
@@ -156,12 +175,26 @@ export function TimelinePlayer({
     seekToEvent(next ?? matches[0]);
   }
 
+  /** Previous/next-marker transport buttons — jump across the same event markers shown in the Timeline Events list below, regardless of type. */
+  function jumpToAdjacentMarker(direction: "previous" | "next") {
+    if (markers.length === 0) return;
+    if (direction === "next") {
+      const next = markers.find((e) => e.timestamp - startTimestamp > offsetMs + 500);
+      seekToEvent(next ?? markers[markers.length - 1]);
+    } else {
+      const previous = [...markers]
+        .reverse()
+        .find((e) => e.timestamp - startTimestamp < offsetMs - 500);
+      seekToEvent(previous ?? markers[0]);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Assessment Timeline
+            Solution Replay
           </h3>
           <span className="font-mono text-xs tabular-nums text-zinc-500 dark:text-zinc-500">
             {formatClock(durationMs)}
@@ -178,50 +211,79 @@ export function TimelinePlayer({
         </p>
 
         <div className="flex flex-col gap-3 border-t border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/40">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-2">
             <Button
               type="button"
               size="icon-sm"
               variant="outline"
-              aria-label="Seek backward 10 seconds"
+              aria-label="Previous event"
+              disabled={markers.length === 0}
+              onClick={() => jumpToAdjacentMarker("previous")}
+            >
+              <SkipBack />
+            </Button>
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="outline"
+              aria-label="Rewind 10 seconds"
               onClick={() => seekTo(offsetMs - SEEK_STEP_MS)}
             >
-              <RotateCcw />
+              <Rewind />
             </Button>
             <Button
               type="button"
-              size="icon-sm"
+              size="icon"
               onClick={() => setPlaying((p) => !p)}
               aria-label={playing ? "Pause replay" : "Play replay"}
+              className="size-10 rounded-full"
             >
-              {playing ? <Pause /> : <Play />}
+              {playing ? <Pause className="size-4.5" /> : <Play className="size-4.5" />}
             </Button>
             <Button
               type="button"
               size="icon-sm"
               variant="outline"
-              aria-label="Seek forward 10 seconds"
+              aria-label="Fast-forward 10 seconds"
               onClick={() => seekTo(offsetMs + SEEK_STEP_MS)}
             >
-              <RotateCw />
+              <FastForward />
             </Button>
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="outline"
+              aria-label="Next event"
+              disabled={markers.length === 0}
+              onClick={() => jumpToAdjacentMarker("next")}
+            >
+              <SkipForward />
+            </Button>
+          </div>
 
+          <div className="flex items-center gap-3">
             <span className="w-14 shrink-0 font-mono text-xs tabular-nums text-zinc-600 dark:text-zinc-400">
               {formatClock(offsetMs)}
             </span>
-            <input
-              type="range"
-              min={0}
-              max={Math.max(durationMs, 1)}
-              value={offsetMs}
-              onChange={(e) => {
-                setPlaying(false);
-                seekTo(Number(e.target.value));
-              }}
-              aria-label="Seek timeline"
-              aria-valuetext={`${formatClock(offsetMs)} of ${formatClock(durationMs)}`}
-              className="h-1.5 w-full flex-1 cursor-pointer appearance-none rounded-full bg-zinc-200 accent-zinc-900 dark:bg-zinc-800 dark:accent-zinc-100"
-            />
+            <div className="relative flex h-4 w-full flex-1 items-center">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500"
+              />
+              <input
+                type="range"
+                min={0}
+                max={Math.max(durationMs, 1)}
+                value={offsetMs}
+                onChange={(e) => {
+                  setPlaying(false);
+                  seekTo(Number(e.target.value));
+                }}
+                aria-label="Seek timeline"
+                aria-valuetext={`${formatClock(offsetMs)} of ${formatClock(durationMs)}`}
+                className="relative h-4 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:shadow [&::-moz-range-track]:bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:mt-[-5px] [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:shadow dark:[&::-moz-range-thumb]:border-zinc-950 dark:[&::-moz-range-thumb]:bg-zinc-100 dark:[&::-webkit-slider-thumb]:border-zinc-950 dark:[&::-webkit-slider-thumb]:bg-zinc-100"
+              />
+            </div>
             <span className="w-14 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-600 dark:text-zinc-400">
               {formatClock(durationMs)}
             </span>

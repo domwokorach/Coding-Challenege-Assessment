@@ -17,6 +17,8 @@ export type TaskResult = {
   title: string;
   category: string;
   difficulty: Challenge["difficulty"];
+  description: string;
+  recommendedMinutes: number;
   language: string;
   status: ChallengeStatus;
   completed: boolean;
@@ -105,6 +107,8 @@ export function buildAssessmentResults(
       title: challenge.title,
       category: challenge.category,
       difficulty: challenge.difficulty,
+      description: challenge.description,
+      recommendedMinutes: challenge.recommendedMinutes,
       language:
         getLanguageOption(progress.language[challenge.id] ?? "")?.label ??
         CHALLENGE_LANGUAGE,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,8 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Confetti } from "@/registry/magicui/confetti";
+import { WarpBackground } from "@/registry/magicui/warp-background";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { GITHUB_DISCUSSIONS_URL } from "@/lib/config";
-import { COURSE_NAME } from "@/lib/assessment/progress";
+import { COURSE_NAME, JUST_COMPLETED_ASSESSMENT_KEY } from "@/lib/assessment/progress";
 import type { Challenge } from "@/lib/assessment/challenges";
 import type { OverallResult } from "@/lib/assessment/scoring";
 
@@ -57,6 +60,22 @@ export function CompletionScreen({
 }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const checkedCelebrateRef = useRef(false);
+
+  // Confetti fires exactly once — right after the candidate lands here from
+  // actually submitting (flagged in sessionStorage by the submit action) —
+  // never on a later revisit to this already-completed screen, and never
+  // again on ordinary re-renders.
+  useEffect(() => {
+    if (checkedCelebrateRef.current || !courseCompleted) return;
+    checkedCelebrateRef.current = true;
+    if (sessionStorage.getItem(JUST_COMPLETED_ASSESSMENT_KEY) === "1") {
+      sessionStorage.removeItem(JUST_COMPLETED_ASSESSMENT_KEY);
+      setCelebrate(true);
+    }
+  }, [courseCompleted]);
 
   const completedCount = challenges.filter((c) => completed[c.id]).length;
   const percent = Math.round((completedCount / challenges.length) * 100);
@@ -83,41 +102,65 @@ export function CompletionScreen({
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const CongratulationsHeading = (
+    <div className="text-center">
+      <p className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        ✓ Course Completed
+      </p>
+      <h1 className="mt-4 text-2xl font-bold sm:text-3xl">
+        Congratulations! 🎉
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        You&apos;ve successfully completed and submitted the{" "}
+        <span className="text-zinc-900 dark:text-zinc-200">
+          {COURSE_NAME}
+        </span>{" "}
+        coding assessment — and what a journey it&apos;s been! You
+        have now completed all 3 chapters and their coding
+        challenges.
+      </p>
+      {overall.totalTests > 0 && (
+        <p
+          className="mt-4 inline-flex items-baseline gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900"
+          aria-label={`Overall assessment score: ${overall.scoreEarned} out of ${overall.scoreMax}, ${overall.scorePercent} percent`}
+        >
+          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            {overall.scoreEarned} / {overall.scoreMax}
+          </span>
+          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-500">
+            — {overall.scorePercent}%
+          </span>
+        </p>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-12 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      {celebrate && (
+        <Confetti
+          className="pointer-events-none fixed inset-0 z-50 size-full"
+          options={{ particleCount: 150, spread: 90, origin: { y: 0.3 } }}
+        />
+      )}
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
         {courseCompleted && (
           <>
-            <div className="text-center">
-              <p className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                ✓ Course Completed
-              </p>
-              <h1 className="mt-4 text-2xl font-bold sm:text-3xl">
-                Congratulations! 🎉
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                You&apos;ve successfully completed and submitted the{" "}
-                <span className="text-zinc-900 dark:text-zinc-200">
-                  {COURSE_NAME}
-                </span>{" "}
-                coding assessment — and what a journey it&apos;s been! You
-                have now completed all 3 chapters and their coding
-                challenges.
-              </p>
-              {overall.totalTests > 0 && (
-                <p
-                  className="mt-4 inline-flex items-baseline gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900"
-                  aria-label={`Overall assessment score: ${overall.scoreEarned} out of ${overall.scoreMax}, ${overall.scorePercent} percent`}
-                >
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                    {overall.scoreEarned} / {overall.scoreMax}
-                  </span>
-                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-500">
-                    — {overall.scorePercent}%
-                  </span>
-                </p>
-              )}
-            </div>
+            {reducedMotion ? (
+              <div className="rounded-2xl border border-zinc-200 p-8 dark:border-zinc-800">
+                {CongratulationsHeading}
+              </div>
+            ) : (
+              <WarpBackground
+                perspective={140}
+                beamsPerSide={2}
+                beamSize={4}
+                beamDuration={4}
+                className="rounded-2xl border-zinc-200 p-8 dark:border-zinc-800"
+              >
+                {CongratulationsHeading}
+              </WarpBackground>
+            )}
 
             {/* Certificate Section */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
