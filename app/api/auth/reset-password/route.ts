@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { passwordCredentials, passwordResetTokens, users } from "@/lib/schema";
+import { passwordCredentials, passwordResetTokens, users } from "@/lib/db/schema";
 import { hashPassword, isValidPassword } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";

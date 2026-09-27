@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { payments, users } from "@/lib/schema";
-import { getStripe } from "@/lib/stripe";
+import { payments, users } from "@/lib/db/schema";
+import { getStripe } from "@/lib/payments/stripe";
 
 export const dynamic = "force-dynamic";
 

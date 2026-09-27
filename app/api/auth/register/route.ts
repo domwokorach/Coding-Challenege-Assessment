@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { passwordCredentials, users } from "@/lib/schema";
+import { passwordCredentials, users } from "@/lib/db/schema";
 import {
   hashPassword,
   isValidEmail,

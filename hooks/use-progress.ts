@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { normalizeProgress, type ProgressState } from "@/lib/progress";
+import { normalizeProgress, type ProgressState } from "@/lib/assessment/progress";
 
 const SAVE_DEBOUNCE_MS = 600;
 
@@ -19,9 +19,12 @@ async function putProgress(progress: ProgressState): Promise<void> {
  * not in localStorage — this app has no authentication, so all visitors
  * share the same progress record.
  */
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 export function useProgress(createDefault: () => ProgressState) {
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // useLayoutEffect (not useEffect) so this is guaranteed to run before any
   // click handler that calls flushSave can fire, even for an edit made in
@@ -39,11 +42,13 @@ export function useProgress(createDefault: () => ProgressState) {
         if (cancelled) return;
         setProgress(normalizeProgress(data, createDefault()));
         setLoaded(true);
+        setSaveStatus("saved");
       })
       .catch(() => {
         if (cancelled) return;
         setProgress(createDefault());
         setLoaded(true);
+        setSaveStatus("saved");
       });
     return () => {
       cancelled = true;
@@ -56,9 +61,13 @@ export function useProgress(createDefault: () => ProgressState) {
     if (!loaded || !progress) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      putProgress(progress).catch(() => {
-        // Best-effort — a failed save just means the next change retries.
-      });
+      setSaveStatus("saving");
+      putProgress(progress)
+        .then(() => setSaveStatus("saved"))
+        .catch(() => {
+          // Best-effort — a failed save just means the next change retries.
+          setSaveStatus("error");
+        });
     }, SAVE_DEBOUNCE_MS);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -79,8 +88,15 @@ export function useProgress(createDefault: () => ProgressState) {
       saveTimer.current = null;
     }
     if (!progressRef.current) return;
-    await putProgress(progressRef.current);
+    setSaveStatus("saving");
+    try {
+      await putProgress(progressRef.current);
+      setSaveStatus("saved");
+    } catch (err) {
+      setSaveStatus("error");
+      throw err;
+    }
   }, []);
 
-  return { progress, setProgress, loaded, flushSave };
+  return { progress, setProgress, loaded, flushSave, saveStatus, retrySave: flushSave };
 }

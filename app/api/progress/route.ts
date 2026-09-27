@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { readProgress, writeProgress } from "@/lib/progress-store";
-import type { ProgressState } from "@/lib/progress";
+import { readProgress, writeProgress } from "@/lib/assessment/progress-store";
+import type { ProgressState } from "@/lib/assessment/progress";
 
 // Progress is tied to the authenticated user — read the session cookie,
 // verify the JWT, and use the user id extracted from the verified token

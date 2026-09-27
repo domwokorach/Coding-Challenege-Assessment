@@ -2,7 +2,7 @@ import { randomBytes, createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { passwordResetTokens, users } from "@/lib/schema";
+import { passwordResetTokens, users } from "@/lib/db/schema";
 import { normalizeEmail } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
