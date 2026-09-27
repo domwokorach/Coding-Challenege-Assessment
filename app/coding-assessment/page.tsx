@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/logout-button";
 import { CompletionScreen } from "@/components/completion-screen";
 import { SiteFooter } from "@/components/site-footer";
 import { useProgress } from "@/hooks/use-progress";
@@ -129,10 +131,15 @@ export default function CodingAssessmentPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
+        <Link
+          href="/"
+          aria-label="Software Engineer Programme home"
+          className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+        >
           Software Engineer Programme
-        </p>
+        </Link>
+        <LogoutButton redirectTo="/" />
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">

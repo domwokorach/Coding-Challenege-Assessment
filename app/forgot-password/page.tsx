@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/logo";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -56,8 +55,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 px-6 py-16 dark:bg-zinc-950">
-      <Link href="/" aria-label="Software Engineer Programme home">
-        <Logo size={48} />
+      <Link
+        href="/"
+        className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+      >
+        Software Engineer Programme
       </Link>
 
       <Card className="w-full max-w-sm">

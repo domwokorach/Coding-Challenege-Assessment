@@ -22,6 +22,8 @@ export const users = pgTable("users", {
   phone: text("phone"),
   emailVerified: boolean("email_verified").notNull().default(false),
   tokenVersion: integer("token_version").notNull().default(0),
+  plan: text("plan").notNull().default("starter"),
+  planActivatedAt: timestamp("plan_activated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -74,6 +76,30 @@ export const progress = pgTable("progress", {
     .references(() => users.id, { onDelete: "cascade" }),
   data: jsonb("data").notNull(),
   certificateId: text("certificate_id").unique(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * One row per checkout attempt against Stripe. Created in "processing"
+ * state as soon as a PaymentIntent exists, then flipped to its terminal
+ * state only after the server re-fetches that PaymentIntent from Stripe —
+ * never from a client-reported result.
+ */
+export const payments = pgTable("payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  plan: text("plan").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  currency: text("currency").notNull().default("usd"),
+  stripePaymentIntentId: text("stripe_payment_intent_id").notNull().unique(),
+  status: text("status").notNull().default("processing"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

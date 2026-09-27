@@ -7,9 +7,6 @@ export type AntiCheatWarning = {
   count: number;
 };
 
-/** After this many recorded violations, the assessment is suspended outright. */
-export const SUSPEND_AFTER_VIOLATIONS = 3;
-
 /**
  * Client-side deterrents only, scoped to whichever page mounts this hook.
  *
@@ -24,24 +21,16 @@ export const SUSPEND_AFTER_VIOLATIONS = 3;
 export function useAntiCheat() {
   const [violationCount, setViolationCount] = useState(0);
   const [warning, setWarning] = useState<AntiCheatWarning | null>(null);
-  const [suspended, setSuspended] = useState(false);
   const awayRef = useRef(false);
   const countRef = useRef(0);
-  const suspendedRef = useRef(false);
 
   const raise = useCallback((message: string) => {
-    if (suspendedRef.current) return;
     countRef.current += 1;
     setViolationCount(countRef.current);
     setWarning({ message, count: countRef.current });
-    if (countRef.current >= SUSPEND_AFTER_VIOLATIONS) {
-      suspendedRef.current = true;
-      setSuspended(true);
-    }
   }, []);
 
   const acknowledge = useCallback(() => {
-    if (suspendedRef.current) return;
     setWarning(null);
   }, []);
 
@@ -117,7 +106,6 @@ export function useAntiCheat() {
   return {
     violationCount,
     warning,
-    suspended,
     acknowledge,
     blockCopyOrCut,
     blockContextMenu,

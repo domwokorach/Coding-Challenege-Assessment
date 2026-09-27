@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/password-input";
-import { Logo } from "@/components/logo";
 import { toast } from "@/components/ui/toast";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -77,8 +76,11 @@ function ResetPasswordForm() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 px-6 py-16 dark:bg-zinc-950">
-      <Link href="/" aria-label="Software Engineer Programme home">
-        <Logo size={48} />
+      <Link
+        href="/"
+        className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+      >
+        Software Engineer Programme
       </Link>
 
       <Card className="w-full max-w-sm">

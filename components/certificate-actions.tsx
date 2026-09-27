@@ -39,7 +39,7 @@ export function CertificateActions({
   }
 
   return (
-    <div className="mt-6 flex justify-center gap-3 print:hidden">
+    <div className="mt-6 flex flex-wrap justify-center gap-3 print:hidden">
       <Button
         onClick={handleDownload}
         className="bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"

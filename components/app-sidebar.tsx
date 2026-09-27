@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Braces, Brackets, CheckCircle2, SquareFunction, Trophy } from "lucide-react";
-import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -43,19 +42,11 @@ export function AppSidebar({
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-3">
         <Link
-          href="/programme"
+          href="/"
           aria-label="Software Engineer Programme home"
-          className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center"
+          className="block truncate px-1 text-sm font-semibold leading-tight group-data-[collapsible=icon]:hidden"
         >
-          <Logo size={28} />
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold leading-tight">
-              Software Engineer
-            </p>
-            <p className="truncate text-xs text-sidebar-foreground/60">
-              Coding Assessment
-            </p>
-          </div>
+          Software Engineer Programme
         </Link>
       </SidebarHeader>
 
@@ -71,15 +62,17 @@ export function AppSidebar({
                   <SidebarMenuItem key={challenge.id}>
                     <SidebarMenuButton
                       isActive={i === activeIndex}
+                      aria-current={i === activeIndex ? "page" : undefined}
                       tooltip={`${challenge.category} — ${challenge.title}`}
                       onClick={() => onSelect(i)}
                     >
-                      <Icon />
+                      <Icon aria-hidden />
                       <span>{challenge.title}</span>
                     </SidebarMenuButton>
                     {isCompleted && (
                       <SidebarMenuBadge>
-                        <CheckCircle2 className="size-3.5 text-emerald-500" />
+                        <CheckCircle2 className="size-3.5 text-emerald-500" aria-hidden />
+                        <span className="sr-only">Completed</span>
                       </SidebarMenuBadge>
                     )}
                   </SidebarMenuItem>

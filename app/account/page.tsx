@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { Logo } from "@/components/logo";
 import { AccountSettings } from "@/components/account-settings";
 
 export const dynamic = "force-dynamic";
@@ -25,26 +24,24 @@ export default async function AccountPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
         <Link
-          href="/programme"
+          href="/"
           aria-label="Software Engineer Programme home"
-          className="flex items-center gap-3"
+          className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100"
         >
-          <Logo size={36} />
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Software Engineer Programme
-          </p>
+          Software Engineer Programme
         </Link>
         <Link
           href="/programme"
-          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="shrink-0 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
-          Return to Software Engineer Programme
+          <span className="sm:hidden">Programme</span>
+          <span className="hidden sm:inline">Return to Software Engineer Programme</span>
         </Link>
       </header>
 
-      <main className="mx-auto w-full max-w-lg flex-1 px-6 py-10 sm:py-12">
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-10 sm:px-6 sm:py-12">
         <h1 className="mb-6 text-xl font-bold">Account Settings</h1>
         <AccountSettings email={user.email} />
       </main>

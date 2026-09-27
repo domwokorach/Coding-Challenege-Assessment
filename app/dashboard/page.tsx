@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { CandidateDashboard } from "@/components/candidate-dashboard";
+import { LogoutButton } from "@/components/logout-button";
 import { useProgress } from "@/hooks/use-progress";
 import { challenges } from "@/lib/challenges";
 import { createDefaultProgress } from "@/lib/progress";
@@ -18,26 +18,27 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
         <Link
-          href="/programme"
+          href="/"
           aria-label="Software Engineer Programme home"
-          className="flex items-center gap-3"
+          className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100"
         >
-          <Logo size={36} />
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Software Engineer Programme
-          </p>
+          Software Engineer Programme
         </Link>
-        <Link
-          href="/programme"
-          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          Return to Software Engineer Programme
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/programme"
+            className="shrink-0 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            <span className="sm:hidden">Programme</span>
+            <span className="hidden sm:inline">Return to Software Engineer Programme</span>
+          </Link>
+          <LogoutButton redirectTo="/" />
+        </div>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10 sm:py-12">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-12">
         {!loaded || !progress ? (
           <p className="py-24 text-center text-sm text-zinc-500 dark:text-zinc-500">
             Loading…

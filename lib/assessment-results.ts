@@ -64,6 +64,12 @@ function round(value: number): number {
   return Math.round(value);
 }
 
+/** Clamps a percentage to the 0-100 range a progress/chart value must stay within. */
+export function clampPercent(value: number): number {
+  if (Number.isNaN(value)) return 0;
+  return Math.min(100, Math.max(0, value));
+}
+
 export function buildAssessmentResults(
   challenges: Challenge[],
   progress: ProgressState

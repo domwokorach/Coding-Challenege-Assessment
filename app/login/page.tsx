@@ -14,7 +14,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BorderBeam } from "@/registry/magicui/border-beam";
-import { Logo } from "@/components/logo";
+import { RibbonBackground } from "@/components/ribbon-background";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -91,106 +93,110 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
-      <Link href="/" aria-label="Software Engineer Programme home">
-        <Logo size={48} />
-      </Link>
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
 
-      <Card className="relative w-full max-w-md overflow-hidden">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>
-            Enter your email and password to continue to your assessment.
-          </CardDescription>
-        </CardHeader>
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-12">
+        <Card className="relative w-full max-w-md overflow-hidden">
+          <RibbonBackground />
 
-        <CardContent>
-          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5" noValidate>
-            <div className="space-y-1.5">
-              <Label htmlFor={emailId}>Email</Label>
-              <Input
-                id={emailId}
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="Enter your email"
-                className="w-full"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? `${emailId}-error` : undefined}
-              />
-              {errors.email && (
-                <p
-                  id={`${emailId}-error`}
-                  role="alert"
-                  className="flex items-center gap-1 text-sm text-destructive"
-                >
-                  {errors.email}
-                </p>
-              )}
-            </div>
+          <CardHeader className="relative">
+            <CardTitle>Login</CardTitle>
+            <CardDescription>
+              Enter your email and password to continue to your assessment.
+            </CardDescription>
+          </CardHeader>
 
-            <div className="space-y-1.5">
-              <Label htmlFor={passwordId}>Password</Label>
-              <Input
-                id={passwordId}
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                className="w-full"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? `${passwordId}-error` : undefined}
-              />
-              {errors.password && (
-                <p
-                  id={`${passwordId}-error`}
-                  role="alert"
-                  className="flex items-center gap-1 text-sm text-destructive"
-                >
-                  {errors.password}
-                </p>
-              )}
-              <div className="flex justify-end">
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:underline focus-visible:outline-none"
-                >
-                  Forgot password?
-                </Link>
+          <CardContent className="relative">
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5" noValidate>
+              <div className="space-y-1.5">
+                <Label htmlFor={emailId}>Email</Label>
+                <Input
+                  id={emailId}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                  className="w-full"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? `${emailId}-error` : undefined}
+                />
+                {errors.email && (
+                  <p
+                    id={`${emailId}-error`}
+                    role="alert"
+                    className="flex items-center gap-1 text-sm text-destructive"
+                  >
+                    {errors.email}
+                  </p>
+                )}
               </div>
-            </div>
 
-            {formError && (
-              <p
-                role="alert"
-                className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
-              >
-                {formError}
+              <div className="space-y-1.5">
+                <Label htmlFor={passwordId}>Password</Label>
+                <Input
+                  id={passwordId}
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="w-full"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? `${passwordId}-error` : undefined}
+                />
+                {errors.password && (
+                  <p
+                    id={`${passwordId}-error`}
+                    role="alert"
+                    className="flex items-center gap-1 text-sm text-destructive"
+                  >
+                    {errors.password}
+                  </p>
+                )}
+                <div className="flex justify-end">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:underline focus-visible:outline-none"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+
+              {formError && (
+                <p
+                  role="alert"
+                  className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
+                >
+                  {formError}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login"}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/register"
+                  className="font-medium text-foreground underline-offset-4 hover:underline"
+                >
+                  Create account
+                </Link>
               </p>
-            )}
+            </form>
+          </CardContent>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
+          <BorderBeam duration={8} size={100} />
+        </Card>
+      </main>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/register"
-                className="font-medium text-foreground underline-offset-4 hover:underline"
-              >
-                Create account
-              </Link>
-            </p>
-          </form>
-        </CardContent>
-
-        <BorderBeam duration={8} size={100} />
-      </Card>
+      <SiteFooter />
     </div>
   );
 }

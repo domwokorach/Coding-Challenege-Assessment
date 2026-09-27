@@ -4,7 +4,6 @@ import { challenges } from "@/lib/challenges";
 import { createDefaultProgress, normalizeProgress } from "@/lib/progress";
 import { readProgress } from "@/lib/progress-store";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { Logo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
 
 // Reads live progress on every request — must not be statically
@@ -30,26 +29,23 @@ export default async function ProgrammePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950">
         <Link
-          href="/programme"
+          href="/"
           aria-label="Software Engineer Programme home"
-          className="flex items-center gap-3"
+          className="min-w-0 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100"
         >
-          <Logo size={36} />
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Software Engineer Programme
-          </p>
+          Software Engineer Programme
         </Link>
         <Link
           href="/account"
-          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="shrink-0 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
           Account
         </Link>
       </header>
 
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center sm:px-6">
         <h1 className="text-2xl font-bold">Software Engineer Programme</h1>
         <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
           Beginner Friendly → Intermediate

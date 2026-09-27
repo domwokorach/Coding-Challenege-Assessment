@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Software Engineer Programme — Coding Assessment",
   description: "Coding assessment workspace for the Software Engineer Programme.",
+};
+
+// `viewportFit: "cover"` lets content extend under notches/hinges/home
+// indicators — required for env(safe-area-inset-*) to resolve to anything
+// other than 0 on iOS (including foldables like iPhone-style dual screens).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -41,7 +41,7 @@ export function SolutionDialog({
     >
       <DialogContent
         showCloseButton={false}
-        className="max-w-lg gap-0 rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+        className="gap-0 rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-2xl sm:max-w-lg dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
       >
         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
           <div>
